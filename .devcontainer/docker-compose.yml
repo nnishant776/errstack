@@ -1,0 +1,28 @@
+version: '3'
+services:
+  development:
+    image: errstack:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    cap_add:
+      - SYS_PTRACE
+    container_name: errstack-dev
+    userns_mode: "host"
+    privileged: true
+    network_mode: "host"
+    tty: true
+    stdin_open: true
+    environment:
+      SHELL: /usr/bin/bash
+    security_opt:
+      - label=disable
+      - seccomp=unconfined
+    working_dir: /workspace
+    tmpfs:
+      - /run
+      - /tmp
+      - /var/log/journal
+    volumes:
+      - ../:/workspace
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
