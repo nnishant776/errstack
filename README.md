@@ -1,0 +1,2 @@
+# errstack
+Errors with stacktrace
