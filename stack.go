@@ -5,14 +5,6 @@ import (
 	"strings"
 )
 
-type Error interface {
-	error
-	Backtrace() Backtrace
-	String() string
-	Throw() Error
-	Unwrap() error
-}
-
 var _ Error = (*StacktraceError)(nil)
 
 type StacktraceError struct {

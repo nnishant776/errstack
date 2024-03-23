@@ -5,16 +5,6 @@ import (
 	"strings"
 )
 
-type ChainedError interface {
-	error
-	Chain(err error) ChainedError
-	Inner() Error
-	Next() ChainedError
-	String() string
-	Throw() ChainedError
-	Unwrap() []error
-}
-
 var _ ChainedError = (*ChainedStacktraceError)(nil)
 
 func NewChain(err error) *ChainedStacktraceError {

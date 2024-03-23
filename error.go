@@ -24,3 +24,21 @@ type Thrower interface {
 type Chainer interface {
 	Chain(err error) ChainedError
 }
+
+type Error interface {
+	error
+	Backtrace() Backtrace
+	String() string
+	Throw() Error
+	Unwrap() error
+}
+
+type ChainedError interface {
+	error
+	Chain(err error) ChainedError
+	Inner() Error
+	Next() ChainedError
+	String() string
+	Throw() ChainedError
+	Unwrap() []error
+}
