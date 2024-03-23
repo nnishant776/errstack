@@ -26,6 +26,10 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 		opt.apply(&stErr.opts)
 	}
 
+	if stErr.opts.autoStacktrace {
+		stErr.backtrace.Frames = callers(3, 0)
+	}
+
 	return stErr
 }
 
@@ -42,6 +46,9 @@ func (self *StacktraceError) Throw() Error {
 		return nil
 	}
 
+	if self.opts.autoStacktrace {
+		return self
+	}
 
 	self.backtrace.Frames = append(self.backtrace.Frames, caller(1))
 
