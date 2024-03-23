@@ -31,7 +31,7 @@ func Chain(err1, err2 error) ChainedError {
 		},
 	}
 
-	if btErr, ok := err2.(interface{ Backtrace() Backtrace }); ok {
+	if btErr, ok := err2.(Backtracer); ok {
 		currErr.currErr.backtrace = btErr.Backtrace()
 	}
 
