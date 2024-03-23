@@ -10,16 +10,23 @@ var _ Error = (*StacktraceError)(nil)
 type StacktraceError struct {
 	err       error
 	backtrace Backtrace
+	opts      stackErrOpts
 }
 
-func New(err error) *StacktraceError {
-	return newStacktraceError(err)
+func New(err error, opts ...StackErrOption) *StacktraceError {
+	return newStacktraceError(err, opts...)
 }
 
-func newStacktraceError(err error) *StacktraceError {
-	return &StacktraceError{
+func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
+	var stErr = &StacktraceError{
 		err: err,
 	}
+
+	for _, opt := range opts {
+		opt.apply(&stErr.opts)
+	}
+
+	return stErr
 }
 
 func (self *StacktraceError) Error() string {
