@@ -17,12 +17,8 @@ type ChainedError interface {
 
 var _ ChainedError = (*ChainedStacktraceError)(nil)
 
-func NewChainedError(err error) *ChainedStacktraceError {
-	return &ChainedStacktraceError{
-		currErr: StacktraceError{
-			err: err,
-		},
-	}
+func NewChain(err error) *ChainedStacktraceError {
+	return newChainedStacktraceError(err)
 }
 
 func newChainedStacktraceError(err error) *ChainedStacktraceError {
