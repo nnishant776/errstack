@@ -10,7 +10,7 @@ func caller(skip int) Frame {
 		return Frame{}
 	}
 
-	frames := runtime.CallersFrames([]uintptr{pc})
+	var frames = runtime.CallersFrames([]uintptr{pc})
 	f, _ := frames.Next()
 
 	return Frame{

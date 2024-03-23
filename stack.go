@@ -43,9 +43,8 @@ func (self *StacktraceError) Throw() Error {
 		return nil
 	}
 
-	frame := caller(1)
 
-	self.backtrace.Frames = append(self.backtrace.Frames, frame)
+	self.backtrace.Frames = append(self.backtrace.Frames, caller(1))
 
 	return self
 }
