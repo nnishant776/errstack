@@ -20,11 +20,11 @@ type StacktraceError struct {
 	backtrace Backtrace
 }
 
-func NewError(err error) *StacktraceError {
-	return newError(err)
+func New(err error) *StacktraceError {
+	return newStacktraceError(err)
 }
 
-func newError(err error) *StacktraceError {
+func newStacktraceError(err error) *StacktraceError {
 	return &StacktraceError{
 		err: err,
 	}
