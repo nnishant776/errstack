@@ -18,7 +18,7 @@ func New(err error, opts ...StackErrOption) *StacktraceError {
 }
 
 func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
-	var stErr = &StacktraceError{
+	stErr := &StacktraceError{
 		err: err,
 	}
 

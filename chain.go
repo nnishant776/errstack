@@ -25,7 +25,7 @@ func Chain(err1, err2 error) ChainedError {
 		return chErr1.Chain(err2)
 	}
 
-	var currErr = &ChainedStacktraceError{
+	currErr := &ChainedStacktraceError{
 		currErr: StacktraceError{
 			err: err1,
 		},
@@ -48,7 +48,7 @@ func (self *ChainedStacktraceError) Chain(err error) ChainedError {
 	if ok {
 		self.nextErr = chErr
 	} else {
-		var nextErr = &ChainedStacktraceError{
+		nextErr := &ChainedStacktraceError{
 			currErr: StacktraceError{
 				err: err,
 			},
@@ -94,7 +94,7 @@ func (self *ChainedStacktraceError) Throw() ChainedError {
 		return nil
 	}
 
-	var frames = &self.currErr.backtrace.Frames
+	frames := &self.currErr.backtrace.Frames
 	*frames = append(*frames, caller(1))
 
 	return self

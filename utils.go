@@ -10,7 +10,7 @@ func caller(skip int) Frame {
 		return Frame{}
 	}
 
-	var frames = runtime.CallersFrames([]uintptr{pc})
+	frames := runtime.CallersFrames([]uintptr{pc})
 	f, _ := frames.Next()
 
 	return Frame{
@@ -21,25 +21,22 @@ func caller(skip int) Frame {
 }
 
 func callers(skip int, cnt int) []Frame {
-	var frames []Frame
-
 	if cnt < 0 {
-		return frames
+		return nil
 	}
 
-	var pcs = make([]uintptr, 20)
+	pcs := make([]uintptr, 20)
 	if cnt > 0 && cnt < 20 {
 		pcs = pcs[:cnt]
 	}
 
-	var count = runtime.Callers(skip+1, pcs[:])
-	frames = make([]Frame, 0, count)
-
+	count := runtime.Callers(skip+1, pcs[:])
 	if count == 0 {
-		return frames
+		return nil
 	}
 
-	var callFrames = runtime.CallersFrames(pcs[:count])
+	frames := make([]Frame, 0, count)
+	callFrames := runtime.CallersFrames(pcs[:count])
 
 	for {
 		f, ok := callFrames.Next()
