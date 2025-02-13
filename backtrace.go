@@ -1,7 +1,6 @@
 package errstack
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -36,5 +35,10 @@ var defaultBacktraceFormatter = func(bt Backtrace) string {
 }
 
 func (self Backtrace) String() string {
-	return fmt.Sprintf("%+v", self.Frames)
+	formatter := defaultBacktraceFormatter
+	if BacktraceFormatter != nil {
+		formatter = BacktraceFormatter
+	}
+
+	return formatter(self)
 }
