@@ -1,21 +1,14 @@
 package errstack
 
-type StackErrOption interface {
-	apply(*stackErrOpts)
-}
-
 type stackErrOpts struct {
 	autoStacktrace bool
 }
 
-type stackErrOptFunc func(*stackErrOpts)
-
-func (self stackErrOptFunc) apply(o *stackErrOpts) {
-	self(o)
-}
+type StackErrOption func(stackErrOpts) stackErrOpts
 
 func WithTraceback() StackErrOption {
-	return stackErrOptFunc(func(o *stackErrOpts) {
+	return func(o stackErrOpts) stackErrOpts {
 		o.autoStacktrace = true
-	})
+		return o
+	}
 }

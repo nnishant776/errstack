@@ -22,8 +22,8 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 		err: err,
 	}
 
-	for _, opt := range opts {
-		opt.apply(&stErr.opts)
+	for _, f := range opts {
+		stErr.opts = f(stErr.opts)
 	}
 
 	if stErr.opts.autoStacktrace {
