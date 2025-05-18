@@ -30,9 +30,9 @@ var defaultCallFrameFormatter = func(f Frame) string {
 	fStr.WriteString(f.Function)
 	fStr.WriteString(" [")
 	fStr.WriteString(f.File)
-	fStr.WriteRune(':')
+	fStr.WriteByte(':')
 	fStr.WriteString(strconv.FormatInt(int64(f.Line), 10))
-	fStr.WriteRune(']')
+	fStr.WriteByte(']')
 
 	return fStr.String()
 }
