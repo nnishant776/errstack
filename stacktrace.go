@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-type Backtrace struct {
+type StackTrace struct {
 	Frames []Frame `json:"stack"`
 }
 
-var BacktraceFormatter = defaultBacktraceFormatter
+var StackTraceFormatter = defaultStackTraceFormatter
 
-var defaultBacktraceFormatter = func(bt Backtrace) string {
+var defaultStackTraceFormatter = func(bt StackTrace) string {
 	var btStr strings.Builder
 
 	for cnt, i := len(bt.Frames), 0; i < cnt; i++ {
@@ -34,10 +34,10 @@ var defaultBacktraceFormatter = func(bt Backtrace) string {
 	return btStr.String()
 }
 
-func (self Backtrace) String() string {
-	formatter := defaultBacktraceFormatter
-	if BacktraceFormatter != nil {
-		formatter = BacktraceFormatter
+func (self StackTrace) String() string {
+	formatter := defaultStackTraceFormatter
+	if StackTraceFormatter != nil {
+		formatter = StackTraceFormatter
 	}
 
 	return formatter(self)
