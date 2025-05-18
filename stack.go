@@ -8,9 +8,9 @@ import (
 var _ Error = (*StacktraceError)(nil)
 
 type StacktraceError struct {
-	err       error
-	backtrace Backtrace
-	opts      stackErrOpts
+	err        error
+	stackTrace StackTrace
+	opts       stackErrOpts
 }
 
 func New(err error, opts ...StackErrOption) *StacktraceError {
@@ -27,7 +27,7 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.backtrace.Frames = callers(3, 0)
+		stErr.stackTrace.Frames = callers(3, 0)
 	}
 
 	return stErr
@@ -50,17 +50,17 @@ func (self *StacktraceError) Throw() Error {
 		return self
 	}
 
-	self.backtrace.Frames = append(self.backtrace.Frames, caller(1))
+	self.stackTrace.Frames = append(self.stackTrace.Frames, caller(1))
 
 	return self
 }
 
-func (self *StacktraceError) Backtrace() Backtrace {
+func (self *StacktraceError) StackTrace() StackTrace {
 	if self == nil || self.err == nil {
-		return Backtrace{}
+		return StackTrace{}
 	}
 
-	return self.backtrace
+	return self.stackTrace
 }
 
 func (self *StacktraceError) Unwrap() error {
@@ -78,7 +78,7 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(map[string]any{
 		"error": self.err.Error(),
-		"stack": self.backtrace.Frames,
+		"stack": self.stackTrace.Frames,
 	})
 }
 
@@ -92,12 +92,12 @@ func (self *StacktraceError) String() string {
 
 	sb.WriteString(formatter(self))
 
-	btFormatter := defaultBacktraceFormatter
-	if BacktraceFormatter != nil {
-		btFormatter = BacktraceFormatter
+	stFormatter := defaultStackTraceFormatter
+	if StackTraceFormatter != nil {
+		stFormatter = StackTraceFormatter
 	}
 
-	sb.WriteString(btFormatter(self.Backtrace()))
+	sb.WriteString(stFormatter(self.StackTrace()))
 
 	return sb.String()
 }

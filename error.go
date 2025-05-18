@@ -9,8 +9,8 @@ var defaultErrorFormatter = func(err error) string {
 	return "Error: " + err.Error() + "\n"
 }
 
-type Backtracer interface {
-	Backtrace() Backtrace
+type StackTracer interface {
+	StackTrace() StackTrace
 }
 
 type Unwrapper interface {
@@ -27,7 +27,7 @@ type Chainer interface {
 
 type Error interface {
 	error
-	Backtrace() Backtrace
+	StackTrace() StackTrace
 	String() string
 	Throw() Error
 	Unwrap() error
