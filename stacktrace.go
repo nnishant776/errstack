@@ -12,23 +12,21 @@ type StackTrace struct {
 var StackTraceFormatter = defaultStackTraceFormatter
 
 var defaultStackTraceFormatter = func(bt StackTrace) string {
-	var btStr strings.Builder
+	const strBytesPerFrame = 256
+	btStr := strings.Builder{}
+	btStr.Grow(256 * len(bt.Frames))
+	cnt := len(bt.Frames)
 
-	for cnt, i := len(bt.Frames), 0; i < cnt; i++ {
-		f := bt.Frames[i]
-		btStr.WriteRune('\t')
-		btStr.WriteRune('#')
+	for i, f := range bt.Frames {
+		btStr.WriteString("\t#")
 		btStr.WriteString(strconv.FormatInt(int64(cnt-1-i), 10))
-		btStr.WriteRune(':')
-		btStr.WriteRune(' ')
+		btStr.WriteString(": ")
 		btStr.WriteString(f.Function)
-		btStr.WriteRune(' ')
-		btStr.WriteRune('[')
+		btStr.WriteString(" [")
 		btStr.WriteString(f.File)
-		btStr.WriteRune(':')
+		btStr.WriteByte(':')
 		btStr.WriteString(strconv.FormatInt(int64(f.Line), 10))
-		btStr.WriteRune(']')
-		btStr.WriteRune('\n')
+		btStr.WriteString("]\n")
 	}
 
 	return btStr.String()
