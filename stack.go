@@ -77,7 +77,7 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(map[string]any{
-		"error": self.err.Error(),
+		"error": self.Error(),
 		"stack": self.stackTrace.Frames,
 	})
 }
