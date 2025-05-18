@@ -67,8 +67,8 @@ func (self *ChainedStacktraceError) Unwrap() []error {
 		return nil
 	}
 
-	var errList []error
-	var chainElem ChainedError = self
+	errList := ([]error)(nil)
+	chainElem := (ChainedError)(self)
 
 	for {
 		errList = append(errList, chainElem.Inner())
@@ -106,8 +106,8 @@ func (self *ChainedStacktraceError) Error() string {
 		return NilErrorString
 	}
 
-	var sb strings.Builder
-	var chainElem ChainedError = self
+	sb := strings.Builder{}
+	chainElem := (ChainedError)(self)
 
 	for {
 		sb.WriteString(chainElem.Inner().Error())
@@ -130,8 +130,8 @@ func (self *ChainedStacktraceError) MarshalJSON() ([]byte, error) {
 		return json.Marshal(nil)
 	}
 
-	var chainElem ChainedError = self
-	var errList []Error
+	errList := ([]Error)(nil)
+	chainElem := (ChainedError)(self)
 
 	for {
 		errList = append(errList, chainElem.Inner())
@@ -149,8 +149,8 @@ func (self *ChainedStacktraceError) String() string {
 		return NilErrorString
 	}
 
-	var sb strings.Builder
-	var chainElem ChainedError = self
+	sb := strings.Builder{}
+	chainElem := (ChainedError)(self)
 
 	for {
 		sb.WriteString(chainElem.Inner().String())
