@@ -119,21 +119,12 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 }
 
 func (self *StacktraceError) String() string {
-	var sb strings.Builder
+	sb := strings.Builder{}
 
-	formatter := defaultErrorFormatter
-	if ErrorFormatter != nil {
-		formatter = ErrorFormatter
-	}
+	stackTrace := self.StackTrace()
 
-	sb.WriteString(formatter(self))
-
-	stFormatter := defaultStackTraceFormatter
-	if StackTraceFormatter != nil {
-		stFormatter = StackTraceFormatter
-	}
-
-	sb.WriteString(stFormatter(self.StackTrace()))
+	GetErrorFormatter()(self, &sb)
+	stackTrace.Print(&sb)
 
 	return sb.String()
 }
