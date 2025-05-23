@@ -81,7 +81,7 @@ func (self *StacktraceError) Throw() Error {
 }
 
 func (self *StacktraceError) StackTrace() StackTrace {
-	if self == nil || self.err == nil {
+	if self == nil {
 		return StackTrace{}
 	}
 
