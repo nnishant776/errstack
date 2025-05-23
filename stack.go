@@ -9,12 +9,17 @@ var _ Error = (*StacktraceError)(nil)
 
 type StacktraceError struct {
 	err        error
+	str        string
 	stackTrace StackTrace
 	opts       stackErrOpts
 }
 
 func New(err error, opts ...StackErrOption) *StacktraceError {
 	return newStacktraceError(err, opts...)
+}
+
+func NewString(errStr string, opts ...StackErrOption) *StacktraceError {
+	return newStacktraceErrorString(errStr, opts...)
 }
 
 func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
@@ -33,12 +38,32 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 	return stErr
 }
 
+func newStacktraceErrorString(errStr string, opts ...StackErrOption) *StacktraceError {
+	stErr := &StacktraceError{
+		str: errStr,
+	}
+
+	for _, f := range opts {
+		stErr.opts = f(stErr.opts)
+	}
+
+	if stErr.opts.autoStacktrace {
+		stErr.stackTrace.Frames = callers(3, 0)
+	}
+
+	return stErr
+}
+
 func (self *StacktraceError) Error() string {
-	if self == nil || self.err == nil {
+	if self == nil {
 		return NilErrorString
 	}
 
-	return self.err.Error()
+	if self.err != nil {
+		return self.err.Error()
+	}
+
+	return self.str
 }
 
 func (self *StacktraceError) Throw() Error {
