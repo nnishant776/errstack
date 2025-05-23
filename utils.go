@@ -1,6 +1,7 @@
 package errstack
 
 import (
+	"math"
 	"runtime"
 )
 
@@ -9,23 +10,39 @@ const (
 )
 
 func caller(skip int) Frame {
-	pc, _, _, ok := runtime.Caller(skip + 1)
-	if !ok {
+	pc := callerPC(skip)
+	if pc == math.MaxUint64 {
 		return Frame{}
 	}
 
-	frames := runtime.CallersFrames([]uintptr{pc})
-	f, _ := frames.Next()
+	frames := genStackTraceFromPCs([]uintptr{pc})
+	return frames[0]
+}
 
-	return Frame{
-		File:     f.File,
-		Function: f.Function,
-		Line:     int32(f.Line),
+func callerPC(skip int) uintptr {
+	pc, _, _, ok := runtime.Caller(skip + 1)
+	if !ok {
+		return math.MaxUint64
 	}
+
+	return pc
 }
 
 func callers(skip int, cnt int) []Frame {
 	if cnt < 0 {
+		return nil
+	}
+
+	pcs := callersPCs(skip, cnt)
+	if len(pcs) <= 0 {
+		return nil
+	}
+
+	return genStackTraceFromPCs(pcs)
+}
+
+func callersPCs(skip int, cnt int) []uintptr {
+	if cnt <= 0 {
 		return nil
 	}
 
@@ -35,8 +52,16 @@ func callers(skip int, cnt int) []Frame {
 		return nil
 	}
 
-	frames := make([]Frame, 0, count)
-	callFrames := runtime.CallersFrames(pcs[:count])
+	return pcs[:count]
+}
+
+func genStackTraceFromPCs(pcs []uintptr) []Frame {
+	if len(pcs) <= 0 {
+		return nil
+	}
+
+	frames := make([]Frame, 0, len(pcs))
+	callFrames := runtime.CallersFrames(pcs)
 
 	for {
 		f, ok := callFrames.Next()

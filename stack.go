@@ -2,6 +2,7 @@ package errstack
 
 import (
 	"encoding/json"
+	"math"
 	"strings"
 )
 
@@ -11,6 +12,7 @@ type StacktraceError struct {
 	err        error
 	str        string
 	stackTrace StackTrace
+	pcList     []uintptr
 	opts       stackErrOpts
 }
 
@@ -32,7 +34,7 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.stackTrace.Frames = callers(3, _MAX_CALL_DEPTH)
+		stErr.pcList = callersPCs(3, _MAX_CALL_DEPTH)
 	}
 
 	return stErr
@@ -48,7 +50,7 @@ func newStacktraceErrorString(errStr string, opts ...StackErrOption) *Stacktrace
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.stackTrace.Frames = callers(3, _MAX_CALL_DEPTH)
+		stErr.pcList = callersPCs(3, _MAX_CALL_DEPTH)
 	}
 
 	return stErr
@@ -75,7 +77,10 @@ func (self *StacktraceError) Throw() Error {
 		return self
 	}
 
-	self.stackTrace.Frames = append(self.stackTrace.Frames, caller(1))
+	if pc := callerPC(1); pc != math.MaxUint64 {
+		self.pcList = append(self.pcList, pc)
+		self.stackTrace = StackTrace{}
+	}
 
 	return self
 }
@@ -84,6 +89,12 @@ func (self *StacktraceError) StackTrace() StackTrace {
 	if self == nil {
 		return StackTrace{}
 	}
+
+	if len(self.stackTrace.Frames) > 0 {
+		return self.stackTrace
+	}
+
+	self.stackTrace.Frames = genStackTraceFromPCs(self.pcList)
 
 	return self.stackTrace
 }
@@ -103,7 +114,7 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(map[string]any{
 		"error": self.Error(),
-		"stack": self.stackTrace.Frames,
+		"stack": self.StackTrace(),
 	})
 }
 
