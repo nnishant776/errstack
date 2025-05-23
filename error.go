@@ -1,44 +1,38 @@
 package errstack
 
+import "io"
+
 var NilErrorString = "<nil>"
 var ErrorChainSeparator = ": "
 
-var ErrorFormatter = defaultErrorFormatter
+type ErrorFormatter func(err error, w ...io.Writer)
 
-var defaultErrorFormatter = func(err error) string {
-	return "Error: " + err.Error() + "\n"
+func SetErrorFormatter(f ErrorFormatter) {
+	errorValueFormatter = f
 }
 
-type StackTracer interface {
-	StackTrace() StackTrace
+func GetErrorFormatter() ErrorFormatter {
+	errFormatter := defaultErrorValueFormatter
+	if errorValueFormatter != nil {
+		errFormatter = errorValueFormatter
+	}
+
+	return errFormatter
 }
 
-type Unwrapper interface {
-	Unwrap() error
-}
+var errorValueFormatter = defaultErrorValueFormatter
 
-type Thrower interface {
-	Throw() Error
-}
-
-type Chainer interface {
-	Chain(err error) ChainedError
-}
-
-type Error interface {
-	error
-	StackTrace() StackTrace
-	String() string
-	Throw() Error
-	Unwrap() error
-}
-
-type ChainedError interface {
-	error
-	Chain(err error) ChainedError
-	Inner() Error
-	Next() ChainedError
-	String() string
-	Throw() ChainedError
-	Unwrap() []error
+var defaultErrorValueFormatter = func(err error, w ...io.Writer) {
+	for _, outBuf := range w {
+		outStr, strOk := outBuf.(io.StringWriter)
+		if strOk {
+			outStr.WriteString("Error: ")
+			outStr.WriteString(err.Error())
+			outStr.WriteString("\n")
+		} else {
+			outBuf.Write([]byte("Error: "))
+			outBuf.Write([]byte(err.Error()))
+			outBuf.Write([]byte("\n"))
+		}
+	}
 }
