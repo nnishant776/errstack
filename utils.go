@@ -4,6 +4,10 @@ import (
 	"runtime"
 )
 
+const (
+	_MAX_CALL_DEPTH int = 32
+)
+
 func caller(skip int) Frame {
 	pc, _, _, ok := runtime.Caller(skip + 1)
 	if !ok {
@@ -25,11 +29,7 @@ func callers(skip int, cnt int) []Frame {
 		return nil
 	}
 
-	pcs := make([]uintptr, 20)
-	if cnt > 0 && cnt < 20 {
-		pcs = pcs[:cnt]
-	}
-
+	pcs := make([]uintptr, cnt)
 	count := runtime.Callers(skip+1, pcs[:])
 	if count == 0 {
 		return nil

@@ -32,7 +32,7 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.stackTrace.Frames = callers(3, 0)
+		stErr.stackTrace.Frames = callers(3, _MAX_CALL_DEPTH)
 	}
 
 	return stErr
@@ -48,7 +48,7 @@ func newStacktraceErrorString(errStr string, opts ...StackErrOption) *Stacktrace
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.stackTrace.Frames = callers(3, 0)
+		stErr.stackTrace.Frames = callers(3, _MAX_CALL_DEPTH)
 	}
 
 	return stErr
