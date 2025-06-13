@@ -2,6 +2,7 @@ package errstack
 
 import (
 	"encoding/json"
+	"io"
 	"math"
 	"strings"
 )
@@ -124,7 +125,13 @@ func (self *StacktraceError) String() string {
 	stackTrace := self.StackTrace()
 
 	GetErrorFormatter()(self, &sb)
-	stackTrace.Print(&sb)
+	stackTrace.Print(StackFrameFormatOptions{}, &sb)
 
 	return sb.String()
+}
+
+func (self *StacktraceError) Print(opts StackFrameFormatOptions, w io.Writer) {
+	stackTrace := self.StackTrace()
+	GetErrorFormatter()(self, w)
+	stackTrace.Print(opts, w)
 }
