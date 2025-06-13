@@ -1,7 +1,7 @@
 build:
 
 test:
-	go test -modfile test.mod -cover coverprofile coverage.out -json -race -memprofile=mem.out -cpuprofile=cpu.out -v ./...
+	go test -modfile test.mod -cover -coverprofile coverage.out -race -memprofile=mem.out -cpuprofile=cpu.out -v ./...
 
 bench: benchname:=.
 bench:
