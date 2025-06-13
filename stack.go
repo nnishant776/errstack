@@ -2,6 +2,7 @@ package errstack
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"math"
 	"strings"
@@ -143,4 +144,92 @@ func (self *StacktraceError) Print(opts StackFrameFormatOptions, w io.Writer) {
 	stackTrace := self.StackTrace()
 	GetErrorFormatter()(self, w)
 	stackTrace.Print(opts, w)
+}
+
+// Format formats the frame according to the fmt.Formatter interface.
+//
+//	%s	Plain error string, no stack trace
+//
+//	%n	Formatted error string, with just the function name in which error was generated
+//
+//	%v	Formatted error string, with the function name and the source location at which error was generated
+//
+//	%j	Plain error string, with the function name and the source location at which error was generated, except
+//		it is printed as a json string
+//
+// Format accepts flags that alter the printing of some verbs, as follows:
+//
+//	%+s	Same as %s, except the specified error formatter will be used for printing the string
+//
+//	%+n	Same as %n, except it will print the stack trace with the name of each function in the call stack
+//
+//	%-n	Same as %+n, except it will not print the stack index
+//
+//	%+v	Same as %v, except it will print the stack trace with the name of each function and source location of
+//		the function call in the call stack
+//
+//	%-v	Same as %+v, except it will not print the stack index
+//
+//	%+j	Same as %j, except it will print the stack trace with the name of each function and source location of
+//		the function call in the call stack as a json string
+//
+// NOTE: Every verb except 's' and 'j' will always use the error and stack formatters defined in the package
+func (self *StacktraceError) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 's':
+		switch {
+		case s.Flag('+'):
+			io.WriteString(s, self.Error())
+		default:
+			GetErrorFormatter()(self, s)
+		}
+
+	case 'n':
+		opts := StackFrameFormatOptions{
+			SkipStackIndex:   false,
+			SkipFunctionName: false,
+			SkipLocation:     true,
+		}
+		stackTrace := self.StackTrace()
+		switch {
+		case s.Flag('+'):
+		case s.Flag('-'):
+			opts.SkipStackIndex = true
+		default:
+			stackTrace.Frames = stackTrace.Frames[:1]
+		}
+		GetErrorFormatter()(self, s)
+		stackTrace.Print(opts, s)
+
+	case 'v':
+		opts := StackFrameFormatOptions{
+			SkipStackIndex:   false,
+			SkipFunctionName: false,
+			SkipLocation:     false,
+		}
+		stackTrace := self.StackTrace()
+		switch {
+		case s.Flag('+'):
+		case s.Flag('-'):
+			opts.SkipStackIndex = true
+		default:
+			stackTrace.Frames = stackTrace.Frames[:1]
+		}
+		GetErrorFormatter()(self, s)
+		stackTrace.Print(opts, s)
+
+	case 'j':
+		stackTrace := self.StackTrace()
+		switch {
+		case s.Flag('+'):
+		case s.Flag('-'):
+		default:
+			stackTrace.Frames = stackTrace.Frames[:1]
+		}
+		data := map[string]any{
+			"error": self.Error(),
+			"stack": stackTrace,
+		}
+		json.NewEncoder(s).Encode(data)
+	}
 }
