@@ -24,7 +24,7 @@ func stackabc2() Error {
 }
 
 func stackabc3() Error {
-	return New(errors.New("Hello Errors!")).Throw()
+	return New(errors.New("Hello Errors!"), WithStack()).Throw()
 }
 
 func Benchmark_pkgerrors(b *testing.B) {
@@ -34,10 +34,19 @@ func Benchmark_pkgerrors(b *testing.B) {
 
 	b.Run("pkgerrrs", func(b *testing.B) {
 		b.Run("print error string only", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				err := pkgerrs.WithStack(pkgerrs.New("pkgerrs"))
-				fmt.Fprintf(io.Discard, "%s", err)
-			}
+			b.Run("no stack capture", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					err := pkgerrs.New("pkgerrs")
+					fmt.Fprintf(io.Discard, "%s", err)
+				}
+			})
+
+			b.Run("with stack capture", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					err := pkgerrs.WithStack(pkgerrs.New("pkgerrs"))
+					fmt.Fprintf(io.Discard, "%s", err)
+				}
+			})
 		})
 
 		b.Run("print error and stacktrace", func(b *testing.B) {
@@ -50,10 +59,19 @@ func Benchmark_pkgerrors(b *testing.B) {
 
 	b.Run("errstack", func(b *testing.B) {
 		b.Run("print error string only", func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				err := NewString("errstk", WithStack())
-				fmt.Fprintf(io.Discard, "%s", err)
-			}
+			b.Run("no stack capture", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					err := NewString("errstk")
+					fmt.Fprintf(io.Discard, "%s", err)
+				}
+			})
+
+			b.Run("with stack capture", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					err := NewString("errstk", WithStack())
+					fmt.Fprintf(io.Discard, "%s", err)
+				}
+			})
 		})
 
 		b.Run("print error and stacktrace", func(b *testing.B) {
