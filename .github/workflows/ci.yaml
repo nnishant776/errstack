@@ -34,4 +34,8 @@ jobs:
 
       - name: Run unit tests
         run: |
-          go test -v -cover -coverprofile=coverage.out -json -race .
+          make test
+
+      - name: Run benchmark
+        run: |
+          make bench
