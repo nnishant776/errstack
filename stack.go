@@ -13,8 +13,9 @@ type StacktraceError struct {
 	err        error
 	str        string
 	stackTrace StackTrace
-	pcList     []uintptr
+	pcList     [_MAX_CALL_DEPTH]uintptr
 	opts       stackErrOpts
+	frameCount int
 }
 
 func New(err error, opts ...StackErrOption) *StacktraceError {
@@ -30,12 +31,16 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 		err: err,
 	}
 
+	for i := range _MAX_CALL_DEPTH {
+		stErr.pcList[i] = math.MaxUint64
+	}
+
 	for _, f := range opts {
 		stErr.opts = f(stErr.opts)
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.pcList = callersPCs(3, _MAX_CALL_DEPTH)
+		stErr.frameCount = len(callersPCsBuf(3, _MAX_CALL_DEPTH, stErr.pcList[:]))
 	}
 
 	return stErr
@@ -51,7 +56,7 @@ func newStacktraceErrorString(errStr string, opts ...StackErrOption) *Stacktrace
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.pcList = callersPCs(3, _MAX_CALL_DEPTH)
+		stErr.frameCount = len(callersPCsBuf(3, _MAX_CALL_DEPTH, stErr.pcList[:]))
 	}
 
 	return stErr
@@ -79,7 +84,10 @@ func (self *StacktraceError) Throw() Error {
 	}
 
 	if pc := callerPC(1); pc != math.MaxUint64 {
-		self.pcList = append(self.pcList, pc)
+		if self.frameCount < _MAX_CALL_DEPTH {
+			self.pcList[self.frameCount] = pc
+			self.frameCount++
+		}
 		self.stackTrace = StackTrace{}
 	}
 
@@ -95,7 +103,7 @@ func (self *StacktraceError) StackTrace() StackTrace {
 		return self.stackTrace
 	}
 
-	self.stackTrace.Frames = genStackTraceFromPCs(self.pcList)
+	self.stackTrace.Frames = genStackTraceFromPCs(self.pcList[:self.frameCount])
 
 	return self.stackTrace
 }
@@ -123,6 +131,7 @@ func (self *StacktraceError) String() string {
 	sb := strings.Builder{}
 
 	stackTrace := self.StackTrace()
+	sb.Grow(_MIN_STR_BYTES_PER_FRAME_STACKTRACE * len(stackTrace.Frames))
 
 	GetErrorFormatter()(self, &sb)
 	stackTrace.Print(StackFrameFormatOptions{}, &sb)
