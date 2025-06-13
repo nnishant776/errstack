@@ -4,6 +4,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"unsafe"
 )
 
 const (
@@ -12,7 +13,7 @@ const (
 
 // This package assumes that the backing implementation of io.Writer(s)
 // do not fail on call to `Write`
-type FrameFormatter func(f Frame, w ...io.Writer)
+type FrameFormatter func(f Frame, opts StackFrameFormatOptions, w ...io.Writer)
 
 func SetFrameFormatter(f FrameFormatter) {
 	callFrameFormatter = f
@@ -37,38 +38,37 @@ func (self Frame) formatter() FrameFormatter {
 	return GetFrameFormatter()
 }
 
-func (self Frame) Print(w ...io.Writer) {
-	self.formatter()(self, w...)
+func (self Frame) Print(opts StackFrameFormatOptions, w ...io.Writer) {
+	self.formatter()(self, opts, w...)
 }
 
 func (self Frame) String() string {
 	sb := strings.Builder{}
-	self.Print(&sb)
+	self.Print(StackFrameFormatOptions{}, &sb)
 	return sb.String()
 }
 
 var callFrameFormatter = defaultCallFrameFormatter
 
-var defaultCallFrameFormatter = func(f Frame, w ...io.Writer) {
-	for _, outBuf := range w {
-		outStr, strOk := outBuf.(io.StringWriter)
+var defaultCallFrameFormatter = func(f Frame, opts StackFrameFormatOptions, w ...io.Writer) {
+	if opts.SkipFunctionName && opts.SkipLocation {
+		return
+	}
 
+	for _, outBuf := range w {
 		// Stack frame format: <function> [file:line]
-		if strOk {
-			outStr.WriteString(f.Function)
-			outStr.WriteString(" [")
-			outStr.WriteString(f.File)
-		} else {
-			outBuf.Write([]byte(f.Function))
-			outBuf.Write([]byte(" ["))
-			outBuf.Write([]byte(f.File))
+		if !opts.SkipFunctionName {
+			outBuf.Write(unsafe.Slice(unsafe.StringData(f.Function), len(f.Function)))
+			outBuf.Write(unsafe.Slice(unsafe.StringData(" ["), len(" [")))
 		}
-		outBuf.Write([]byte{':'})
-		if strOk {
-			outStr.WriteString(strconv.FormatInt(int64(f.Line), 10))
-		} else {
-			outBuf.Write([]byte(strconv.FormatInt(int64(f.Line), 10)))
+		if !opts.SkipLocation {
+			outBuf.Write(unsafe.Slice(unsafe.StringData(f.File), len(f.File)))
+			outBuf.Write([]byte{':'})
+			line := strconv.FormatInt(int64(f.Line), 10)
+			outBuf.Write(unsafe.Slice(unsafe.StringData(line), len(line)))
 		}
-		outBuf.Write([]byte{']'})
+		if !opts.SkipFunctionName {
+			outBuf.Write([]byte{']'})
+		}
 	}
 }
