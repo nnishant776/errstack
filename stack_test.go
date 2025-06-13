@@ -7,7 +7,7 @@ import (
 
 func Test_stackerr(t *testing.T) {
 	err := stackabc1()
-	t.Logf("\n%v", err.String())
+	t.Logf("%-v\n", err)
 }
 
 func stackabc1() Error {
