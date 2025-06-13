@@ -41,6 +41,19 @@ func callers(skip int, cnt int) []Frame {
 	return genStackTraceFromPCs(pcs)
 }
 
+func callersPCsBuf(skip int, cnt int, buf []uintptr) []uintptr {
+	if cnt <= 0 {
+		return nil
+	}
+
+	count := runtime.Callers(skip+1, buf[:cnt])
+	if count == 0 {
+		return nil
+	}
+
+	return buf[:count]
+}
+
 func callersPCs(skip int, cnt int) []uintptr {
 	if cnt <= 0 {
 		return nil
