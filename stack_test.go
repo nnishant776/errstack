@@ -59,7 +59,7 @@ func Benchmark_pkgerrors(b *testing.B) {
 		b.Run("print error and stacktrace", func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				err := NewString("errstk", WithStack())
-				fmt.Fprintf(io.Discard, "%-j", err)
+				fmt.Fprintf(io.Discard, "%-v", err)
 			}
 		})
 	})
