@@ -2,7 +2,6 @@ package errstack
 
 import (
 	"io"
-	"strconv"
 	"strings"
 )
 
@@ -30,7 +29,7 @@ func GetFrameFormatter() FrameFormatter {
 type Frame struct {
 	File     string `json:"file"`
 	Function string `json:"function"`
-	Line     int32  `json:"line"`
+	Line     string `json:"line"`
 }
 
 func (self Frame) Print(opts StackFrameFormatOptions, w ...io.Writer) {
@@ -50,27 +49,37 @@ func defaultCallFrameFormatter(f Frame, opts StackFrameFormatOptions, w ...io.Wr
 		return
 	}
 
-	funcSlice := string2Slice(f.Function)
-	prefixSlice := string2Slice(" [")
-	fileSlice := string2Slice(f.File)
-	lineSlice := string2Slice(strconv.FormatInt(int64(f.Line), 10))
-
-	suffixSlice := []byte{']'}
-	sepSlice := []byte{':'}
-
 	for _, outBuf := range w {
 		// Stack frame format: <function> [file:line]
 		if !opts.SkipFunctionName {
-			outBuf.Write(funcSlice)
-			outBuf.Write(prefixSlice)
+			switch o := outBuf.(type) {
+			case io.StringWriter:
+				o.WriteString(f.Function)
+				o.WriteString(" [")
+			default:
+				outBuf.Write(string2Slice(f.Function))
+				outBuf.Write(string2Slice(" ["))
+			}
 		}
 		if !opts.SkipLocation {
-			outBuf.Write(fileSlice)
-			outBuf.Write(sepSlice)
-			outBuf.Write(lineSlice)
+			switch o := outBuf.(type) {
+			case io.StringWriter:
+				o.WriteString(f.File)
+				o.WriteString(":")
+				o.WriteString(f.Line)
+			default:
+				outBuf.Write(string2Slice(f.File))
+				outBuf.Write([]byte{':'})
+				outBuf.Write(string2Slice(f.Line))
+			}
 		}
 		if !opts.SkipFunctionName {
-			outBuf.Write(suffixSlice)
+			switch o := outBuf.(type) {
+			case io.StringWriter:
+				o.WriteString("]")
+			default:
+				outBuf.Write([]byte{']'})
+			}
 		}
 	}
 }
