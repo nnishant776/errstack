@@ -32,10 +32,6 @@ func newStacktraceError(err error, opts ...StackErrOption) *StacktraceError {
 		err: err,
 	}
 
-	for i := 0; i < _MAX_CALL_DEPTH; i++ {
-		stErr.pcList[i] = math.MaxUint64
-	}
-
 	for _, f := range opts {
 		stErr.opts = f(stErr.opts)
 	}

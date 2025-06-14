@@ -40,7 +40,7 @@ func GetStackFormatter() StackFormatter {
 
 var stackTraceFormatter = defaultStackTraceFormatter
 
-var defaultStackTraceFormatter = func(bt StackTrace, opts StackFrameFormatOptions, w ...io.Writer) {
+func defaultStackTraceFormatter(bt StackTrace, opts StackFrameFormatOptions, w ...io.Writer) {
 	if len(bt.Frames) <= 0 {
 		return
 	}
@@ -61,12 +61,8 @@ var defaultStackTraceFormatter = func(bt StackTrace, opts StackFrameFormatOption
 	}
 }
 
-func (self StackTrace) formatter() StackFormatter {
-	return GetStackFormatter()
-}
-
 func (self StackTrace) Print(opts StackFrameFormatOptions, w ...io.Writer) {
-	self.formatter()(self, opts, w...)
+	GetStackFormatter()(self, opts, w...)
 }
 
 func (self StackTrace) String() string {
