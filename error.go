@@ -1,6 +1,9 @@
 package errstack
 
-import "io"
+import (
+	"io"
+	"unsafe"
+)
 
 var NilErrorString = "<nil>"
 var ErrorChainSeparator = ": "
@@ -23,16 +26,14 @@ func GetErrorFormatter() ErrorFormatter {
 var errorValueFormatter = defaultErrorValueFormatter
 
 var defaultErrorValueFormatter = func(err error, w ...io.Writer) {
+	prefix, errStr := "Error: ", err.Error()
+	prefixSlice := unsafe.Slice(unsafe.StringData(prefix), len(prefix))
+	errStrSlice := unsafe.Slice(unsafe.StringData(errStr), len(errStr))
+	sepSlice := []byte{'\n'}
+
 	for _, outBuf := range w {
-		outStr, strOk := outBuf.(io.StringWriter)
-		if strOk {
-			outStr.WriteString("Error: ")
-			outStr.WriteString(err.Error())
-			outStr.WriteString("\n")
-		} else {
-			outBuf.Write([]byte("Error: "))
-			outBuf.Write([]byte(err.Error()))
-			outBuf.Write([]byte("\n"))
-		}
+		outBuf.Write(prefixSlice)
+		outBuf.Write(errStrSlice)
+		outBuf.Write(sepSlice)
 	}
 }

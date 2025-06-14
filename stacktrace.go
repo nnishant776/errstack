@@ -4,7 +4,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"unsafe"
 )
 
 const (
@@ -41,41 +40,35 @@ func GetStackFormatter() StackFormatter {
 
 var stackTraceFormatter = defaultStackTraceFormatter
 
-var defaultStackTraceFormatter = func(bt StackTrace, opts StackFrameFormatOptions, w ...io.Writer) {
+func defaultStackTraceFormatter(bt StackTrace, opts StackFrameFormatOptions, w ...io.Writer) {
 	if len(bt.Frames) <= 0 {
 		return
 	}
 
 	cnt := len(bt.Frames)
 
+	sepSlice := []byte{'\t', '#', '\n'}
 	for _, outBuf := range w {
 		for i, f := range bt.Frames {
 			if opts.SkipStackIndex {
-				outBuf.Write([]byte{'\t'})
+				outBuf.Write(sepSlice[:1])
 			} else {
-				prefix := "\t#"
-				index := strconv.FormatInt(int64(cnt-1-i), 10)
-				suffix := ": "
-				outBuf.Write(unsafe.Slice(unsafe.StringData(prefix), len(prefix)))
-				outBuf.Write(unsafe.Slice(unsafe.StringData(index), len(index)))
-				outBuf.Write(unsafe.Slice(unsafe.StringData(suffix), len(suffix)))
+				outBuf.Write(sepSlice[:2])
+				outBuf.Write(string2Slice(strconv.FormatInt(int64(cnt-i-1), 10)))
 			}
 			f.Print(opts, outBuf)
-			outBuf.Write([]byte{'\n'})
+			outBuf.Write(sepSlice[2:])
 		}
 	}
 }
 
-func (self StackTrace) formatter() StackFormatter {
-	return GetStackFormatter()
-}
-
 func (self StackTrace) Print(opts StackFrameFormatOptions, w ...io.Writer) {
-	self.formatter()(self, opts, w...)
+	GetStackFormatter()(self, opts, w...)
 }
 
 func (self StackTrace) String() string {
 	sb := strings.Builder{}
+	sb.Grow(_MIN_STR_BYTES_PER_FRAME_STACKTRACE * len(self.Frames))
 	self.Print(StackFrameFormatOptions{}, &sb)
 	return sb.String()
 }
