@@ -3,6 +3,7 @@ package errstack
 import (
 	"math"
 	"runtime"
+	"strconv"
 	"unsafe"
 )
 
@@ -82,7 +83,7 @@ func genStackTraceFromPCs(pcs []uintptr) []Frame {
 		frames = append(frames, Frame{
 			File:     f.File,
 			Function: f.Function,
-			Line:     int32(f.Line),
+			Line:     strconv.FormatInt(int64(f.Line), 10),
 		})
 
 		if !ok {

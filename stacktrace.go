@@ -47,17 +47,35 @@ func defaultStackTraceFormatter(bt StackTrace, opts StackFrameFormatOptions, w .
 
 	cnt := len(bt.Frames)
 
-	sepSlice := []byte{'\t', '#', '\n'}
+	sepSlice := []byte{'\t', '#', '\n', ':', ' '}
 	for _, outBuf := range w {
 		for i, f := range bt.Frames {
 			if opts.SkipStackIndex {
-				outBuf.Write(sepSlice[:1])
+				switch o := outBuf.(type) {
+				case io.StringWriter:
+					o.WriteString("\t")
+				default:
+					outBuf.Write(sepSlice[:1])
+				}
 			} else {
-				outBuf.Write(sepSlice[:2])
-				outBuf.Write(string2Slice(strconv.FormatInt(int64(cnt-i-1), 10)))
+				switch o := outBuf.(type) {
+				case io.StringWriter:
+					o.WriteString("\t#")
+					o.WriteString(strconv.FormatInt(int64(cnt-i-1), 10))
+					o.WriteString(": ")
+				default:
+					outBuf.Write(sepSlice[:2])
+					outBuf.Write(string2Slice(strconv.FormatInt(int64(cnt-i-1), 10)))
+					outBuf.Write(sepSlice[3:])
+				}
 			}
 			f.Print(opts, outBuf)
-			outBuf.Write(sepSlice[2:])
+			switch o := outBuf.(type) {
+			case io.StringWriter:
+				o.WriteString("\n")
+			default:
+				outBuf.Write(sepSlice[2:3])
+			}
 		}
 	}
 }
