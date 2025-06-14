@@ -35,12 +35,8 @@ type Frame struct {
 	Line     int32  `json:"line"`
 }
 
-func (self Frame) formatter() FrameFormatter {
-	return GetFrameFormatter()
-}
-
 func (self Frame) Print(opts StackFrameFormatOptions, w ...io.Writer) {
-	self.formatter()(self, opts, w...)
+	GetFrameFormatter()(self, opts, w...)
 }
 
 func (self Frame) String() string {
@@ -51,7 +47,7 @@ func (self Frame) String() string {
 
 var callFrameFormatter = defaultCallFrameFormatter
 
-var defaultCallFrameFormatter = func(f Frame, opts StackFrameFormatOptions, w ...io.Writer) {
+func defaultCallFrameFormatter(f Frame, opts StackFrameFormatOptions, w ...io.Writer) {
 	if opts.SkipFunctionName && opts.SkipLocation {
 		return
 	}
