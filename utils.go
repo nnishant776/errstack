@@ -3,6 +3,7 @@ package errstack
 import (
 	"math"
 	"runtime"
+	"unsafe"
 )
 
 const (
@@ -90,4 +91,8 @@ func genStackTraceFromPCs(pcs []uintptr) []Frame {
 	}
 
 	return frames
+}
+
+func string2Slice(s string) []byte {
+	return unsafe.Slice(unsafe.StringData(s), len(s))
 }
