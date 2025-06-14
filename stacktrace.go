@@ -1,8 +1,8 @@
 package errstack
 
 import (
-	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -47,16 +47,17 @@ func defaultStackTraceFormatter(bt StackTrace, opts StackFrameFormatOptions, w .
 
 	cnt := len(bt.Frames)
 
-	sepSlice := []byte{'\n'}
+	sepSlice := []byte{'\t', '#', '\n'}
 	for _, outBuf := range w {
 		for i, f := range bt.Frames {
 			if opts.SkipStackIndex {
-				fmt.Fprint(outBuf, "\t")
+				outBuf.Write(sepSlice[:1])
 			} else {
-				fmt.Fprintf(outBuf, "\t#%d: ", cnt-i-1)
+				outBuf.Write(sepSlice[:2])
+				outBuf.Write(string2Slice(strconv.FormatInt(int64(cnt-i-1), 10)))
 			}
 			f.Print(opts, outBuf)
-			outBuf.Write(sepSlice)
+			outBuf.Write(sepSlice[2:])
 		}
 	}
 }

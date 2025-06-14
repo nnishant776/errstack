@@ -3,9 +3,7 @@ package errstack
 import (
 	"io"
 	"strconv"
-
 	"strings"
-	"unsafe"
 )
 
 const (
@@ -52,11 +50,11 @@ func defaultCallFrameFormatter(f Frame, opts StackFrameFormatOptions, w ...io.Wr
 		return
 	}
 
-	funcSlice := unsafe.Slice(unsafe.StringData(f.Function), len(f.Function))
-	prefixSlice := unsafe.Slice(unsafe.StringData(" ["), len(" ["))
-	fileSlice := unsafe.Slice(unsafe.StringData(f.File), len(f.File))
-	lineStr := strconv.FormatInt(int64(f.Line), 10)
-	lineSlice := unsafe.Slice(unsafe.StringData(lineStr), len(lineStr))
+	funcSlice := string2Slice(f.Function)
+	prefixSlice := string2Slice(" [")
+	fileSlice := string2Slice(f.File)
+	lineSlice := string2Slice(strconv.FormatInt(int64(f.Line), 10))
+
 	suffixSlice := []byte{']'}
 	sepSlice := []byte{':'}
 
