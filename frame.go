@@ -3,6 +3,7 @@ package errstack
 import (
 	"io"
 	"strconv"
+
 	"strings"
 	"unsafe"
 )
@@ -55,20 +56,27 @@ var defaultCallFrameFormatter = func(f Frame, opts StackFrameFormatOptions, w ..
 		return
 	}
 
+	funcSlice := unsafe.Slice(unsafe.StringData(f.Function), len(f.Function))
+	prefixSlice := unsafe.Slice(unsafe.StringData(" ["), len(" ["))
+	fileSlice := unsafe.Slice(unsafe.StringData(f.File), len(f.File))
+	lineStr := strconv.FormatInt(int64(f.Line), 10)
+	lineSlice := unsafe.Slice(unsafe.StringData(lineStr), len(lineStr))
+	suffixSlice := []byte{']'}
+	sepSlice := []byte{':'}
+
 	for _, outBuf := range w {
 		// Stack frame format: <function> [file:line]
 		if !opts.SkipFunctionName {
-			outBuf.Write(unsafe.Slice(unsafe.StringData(f.Function), len(f.Function)))
-			outBuf.Write(unsafe.Slice(unsafe.StringData(" ["), len(" [")))
+			outBuf.Write(funcSlice)
+			outBuf.Write(prefixSlice)
 		}
 		if !opts.SkipLocation {
-			outBuf.Write(unsafe.Slice(unsafe.StringData(f.File), len(f.File)))
-			outBuf.Write([]byte{':'})
-			line := strconv.FormatInt(int64(f.Line), 10)
-			outBuf.Write(unsafe.Slice(unsafe.StringData(line), len(line)))
+			outBuf.Write(fileSlice)
+			outBuf.Write(sepSlice)
+			outBuf.Write(lineSlice)
 		}
 		if !opts.SkipFunctionName {
-			outBuf.Write([]byte{']'})
+			outBuf.Write(suffixSlice)
 		}
 	}
 }
