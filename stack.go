@@ -91,6 +91,18 @@ func (self *StacktraceError) Throw() Error {
 	return self
 }
 
+func (self *StacktraceError) StackTraceN(n int) StackTrace {
+	if self == nil {
+		return StackTrace{}
+	}
+
+	n = min(n, self.frameCount)
+
+	self.stackTrace.Frames = genStackTraceFromPCs(self.pcList[:n])
+
+	return self.stackTrace
+}
+
 func (self *StacktraceError) StackTrace() StackTrace {
 	if self == nil {
 		return StackTrace{}
@@ -126,20 +138,11 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 
 func (self *StacktraceError) String() string {
 	sb := strings.Builder{}
-
 	stackTrace := self.StackTrace()
 	sb.Grow(_MIN_STR_BYTES_PER_FRAME_STACKTRACE * len(stackTrace.Frames))
-
-	GetErrorFormatter()(self, &sb)
-	stackTrace.Print(StackFrameFormatOptions{}, &sb)
-
+	DefaultErrorFormatter.FormatBuffer(&sb, self)
+	DefaultStackTraceFormatter.FormatBuffer(&sb, stackTrace)
 	return sb.String()
-}
-
-func (self *StacktraceError) Print(opts StackFrameFormatOptions, w io.Writer) {
-	stackTrace := self.StackTrace()
-	GetErrorFormatter()(self, w)
-	stackTrace.Print(opts, w)
 }
 
 // Format formats the frame according to the fmt.Formatter interface.
@@ -171,57 +174,60 @@ func (self *StacktraceError) Print(opts StackFrameFormatOptions, w io.Writer) {
 //
 // NOTE: Every verb except 's' and 'j' will always use the error and stack formatters defined in the package
 func (self *StacktraceError) Format(s fmt.State, verb rune) {
+	frameCnt := self.frameCount
+	erFmt := DefaultErrorFormatter
+	ffFmt := DefaultStackFrameFormatter
+	stFmt := DefaultStackTraceFormatter
+	eOpts := erFmt.Options()
+	fOpts := ffFmt.Options()
+	sOpts := stFmt.Options()
+	stackTrace := StackTrace{}
 	switch verb {
 	case 's':
 		switch {
 		case s.Flag('+'):
-			io.WriteString(s, self.Error())
+			erFmt.FormatBuffer(s, self)
 		default:
-			GetErrorFormatter()(self, s)
+			io.WriteString(s, self.Error())
 		}
 
 	case 'n':
-		opts := StackFrameFormatOptions{
-			SkipStackIndex:   false,
-			SkipFunctionName: false,
-			SkipLocation:     true,
-		}
-		stackTrace := self.StackTrace()
+		fOpts.SkipLocation = true
 		switch {
 		case s.Flag('+'):
 		case s.Flag('-'):
-			opts.SkipStackIndex = true
+			sOpts.SkipStackIndex = true
 		default:
-			stackTrace.Frames = stackTrace.Frames[:1]
+			frameCnt = min(1, frameCnt)
 		}
-		GetErrorFormatter()(self, s)
-		stackTrace.Print(opts, s)
+
+		stackTrace = self.StackTraceN(frameCnt)
+
+		erFmt.WithOptions(eOpts).FormatBuffer(s, self)
+		stFmt.WithOptions(sOpts).WithFrameFormatter(ffFmt.WithOptions(fOpts)).FormatBuffer(s, stackTrace)
 
 	case 'v':
-		opts := StackFrameFormatOptions{
-			SkipStackIndex:   false,
-			SkipFunctionName: false,
-			SkipLocation:     false,
-		}
-		stackTrace := self.StackTrace()
 		switch {
 		case s.Flag('+'):
 		case s.Flag('-'):
-			opts.SkipStackIndex = true
+			sOpts.SkipStackIndex = true
 		default:
-			stackTrace.Frames = stackTrace.Frames[:1]
+			frameCnt = min(1, frameCnt)
 		}
-		GetErrorFormatter()(self, s)
-		stackTrace.Print(opts, s)
+
+		stackTrace = self.StackTraceN(frameCnt)
+
+		erFmt.WithOptions(eOpts).FormatBuffer(s, self)
+		stFmt.WithOptions(sOpts).FormatBuffer(s, stackTrace)
 
 	case 'j':
-		stackTrace := self.StackTrace()
 		switch {
 		case s.Flag('+'):
 		case s.Flag('-'):
 		default:
-			stackTrace.Frames = stackTrace.Frames[:1]
+			frameCnt = min(1, frameCnt)
 		}
+		stackTrace = self.StackTraceN(frameCnt)
 		data := map[string]any{
 			"error": self.Error(),
 			"stack": stackTrace,
