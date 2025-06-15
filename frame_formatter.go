@@ -6,8 +6,11 @@ import (
 )
 
 type FrameFormatterOptions struct {
-	SkipFunctionName bool
-	SkipLocation     bool
+	LocationPrefix    string
+	LocationSuffix    string
+	FileLineSeparator string
+	SkipFunctionName  bool
+	SkipLocation      bool
 }
 
 type FrameFormatter interface {
@@ -41,23 +44,23 @@ func (self *frameFormatter) format(w io.Writer, f Frame) {
 		switch o := w.(type) {
 		case io.StringWriter:
 			if !self.opts.SkipFunctionName {
-				o.WriteString(" [")
+				o.WriteString(self.opts.LocationPrefix)
 			}
 			o.WriteString(f.File)
-			o.WriteString(":")
+			o.WriteString(self.opts.FileLineSeparator)
 			o.WriteString(f.Line)
 			if !self.opts.SkipFunctionName {
-				o.WriteString("]")
+				o.WriteString(self.opts.LocationSuffix)
 			}
 		default:
 			if !self.opts.SkipFunctionName {
-				w.Write(string2Slice(" ["))
+				w.Write(string2Slice(self.opts.LocationPrefix))
 			}
 			w.Write(string2Slice(f.File))
-			w.Write([]byte{':'})
+			w.Write(string2Slice(self.opts.FileLineSeparator))
 			w.Write(string2Slice(f.Line))
 			if !self.opts.SkipFunctionName {
-				w.Write([]byte{']'})
+				w.Write(string2Slice(self.opts.LocationSuffix))
 			}
 		}
 	}
