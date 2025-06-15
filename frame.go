@@ -9,8 +9,8 @@ const (
 )
 
 type Frame struct {
-	File     string `json:"file"`
 	Function string `json:"function"`
+	File     string `json:"file"`
 	Line     string `json:"line"`
 }
 
