@@ -58,7 +58,13 @@ func (self *stackTraceFormatter) format(w io.Writer, s StackTrace) {
 				w.Write(string2Slice(self.opts.IndexSuffix))
 			}
 		}
+
 		self.ffmt.FormatBuffer(w, f)
+
+		if i == cnt-1 {
+			continue
+		}
+
 		switch o := w.(type) {
 		case io.StringWriter:
 			o.WriteString(self.opts.FrameSeparator)
