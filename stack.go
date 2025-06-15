@@ -145,93 +145,105 @@ func (self *StacktraceError) String() string {
 	return sb.String()
 }
 
-// Format formats the frame according to the fmt.Formatter interface.
+// Format formats the frame according to the fmt.Formatter interface. Format also accepts
+// flags that alter the printing of some verbs. The allowed combinations are as follows:
 //
 //	%s	Plain error string, no stack trace
 //
-//	%n	Formatted error string, with just the function name in which error was generated
-//
-//	%v	Formatted error string, with the function name and the source location at which error was generated
-//
-//	%j	Plain error string, with the function name and the source location at which error was generated, except
-//		it is printed as a json string
-//
-// Format accepts flags that alter the printing of some verbs, as follows:
-//
 //	%+s	Same as %s, except the specified error formatter will be used for printing the string
 //
-//	%+n	Same as %n, except it will print the stack trace with the name of each function in the call stack
+//	%v	Formatted error string, with just the function name in the stack trace.
 //
-//	%-n	Same as %+n, except it will not print the stack index
+//	% v	Same as %v, except the stack trace is printed on separate lines. This overrides the
+//		stack frame separator and the error separator to '\n'. Rest of the options are kept intact
 //
-//	%+v	Same as %v, except it will print the stack trace with the name of each function and source location of
-//		the function call in the call stack
+//	%-v	Same as %v, except it will print the source location as well
 //
-//	%-v	Same as %+v, except it will not print the stack index
+//	%+v	Same as %-v, except it will print the stack trace on a separate line than the error. This
+//		overrides the stack frame separator and the error separator to '\n'. Rest of the options
+//		are kept intact
 //
-//	%+j	Same as %j, except it will print the stack trace with the name of each function and source location of
-//		the function call in the call stack as a json string
+//	%#v	Same as %+v, except it will print stack indices as well
 //
-// NOTE: Every verb except 's' and 'j' will always use the error and stack formatters defined in the package
+//	%j	Same as %-v, except it will be printed as a json string
+//
+//	%+j	Same as %-j, except it will be pretty printed. '+' can be followed by an arbitrary number
+//		to indicate the indentation in the json output
+//
+// NOTE: Every verb defined above will always use the error and stack formatters defined in the package.
+// It will only override the options mentioned as part of the flags and the rest will be used as is. The user
+// is free to define other options of their choosing or provide entirely different implmentations as long as
+// the interfaces are satisfied.
 func (self *StacktraceError) Format(s fmt.State, verb rune) {
-	frameCnt := self.frameCount
 	erFmt := DefaultErrorFormatter
 	ffFmt := DefaultStackFrameFormatter
 	stFmt := DefaultStackTraceFormatter
+
 	eOpts := erFmt.Options()
 	fOpts := ffFmt.Options()
 	sOpts := stFmt.Options()
+
 	stackTrace := StackTrace{}
 	switch verb {
 	case 's':
 		switch {
 		case s.Flag('+'):
-			erFmt.FormatBuffer(s, self)
+			eOpts.ErrorSeparator = ""
+			erFmt.WithOptions(eOpts).FormatBuffer(s, self)
 		default:
-			io.WriteString(s, self.Error())
+			errStr := self.Error()
+			switch o := s.(type) {
+			case io.StringWriter:
+				o.WriteString(errStr)
+			default:
+				s.Write(string2Slice(errStr))
+			}
 		}
-
-	case 'n':
-		fOpts.SkipLocation = true
-		switch {
-		case s.Flag('+'):
-		case s.Flag('-'):
-			sOpts.SkipStackIndex = true
-		default:
-			frameCnt = min(1, frameCnt)
-		}
-
-		stackTrace = self.StackTraceN(frameCnt)
-
-		erFmt.WithOptions(eOpts).FormatBuffer(s, self)
-		stFmt.WithOptions(sOpts).WithFrameFormatter(ffFmt.WithOptions(fOpts)).FormatBuffer(s, stackTrace)
 
 	case 'v':
+		flags := byte(0)
 		switch {
-		case s.Flag('+'):
+		case s.Flag(' '):
+			flags = flags | 1<<0
 		case s.Flag('-'):
-			sOpts.SkipStackIndex = true
+			flags = flags | 1<<1
+		case s.Flag('+'):
+			flags = flags | 1<<2
+		case s.Flag('#'):
+			flags = flags | 1<<3
 		default:
-			frameCnt = min(1, frameCnt)
 		}
 
-		stackTrace = self.StackTraceN(frameCnt)
+		fOpts.SkipLocation = flags <= 1
+		sOpts.SkipStackIndex = flags&(1<<3) == 0
+		if flags&0x0d > 0 {
+			eOpts.ErrorSeparator = "\n"
+			sOpts.FrameSeparator = "\n"
+		}
+
+		stackTrace = self.StackTrace()
 
 		erFmt.WithOptions(eOpts).FormatBuffer(s, self)
-		stFmt.WithOptions(sOpts).FormatBuffer(s, stackTrace)
+		stFmt.WithOptions(sOpts).
+			WithFrameFormatter(ffFmt.WithOptions(fOpts)).
+			FormatBuffer(s, stackTrace)
 
 	case 'j':
-		switch {
-		case s.Flag('+'):
-		case s.Flag('-'):
-		default:
-			frameCnt = min(1, frameCnt)
-		}
-		stackTrace = self.StackTraceN(frameCnt)
+		indentEnabled := s.Flag('+')
+		stackTrace = self.StackTrace()
 		data := map[string]any{
 			"error": self.Error(),
-			"stack": stackTrace,
+			"trace": stackTrace,
 		}
-		json.NewEncoder(s).Encode(data)
+
+		if indentEnabled {
+			w, _ := s.Width()
+			w = max(2, w)
+			enc := json.NewEncoder(s)
+			enc.SetIndent("", strings.Repeat(" ", w))
+			enc.Encode(data)
+		} else {
+			json.NewEncoder(s).Encode(data)
+		}
 	}
 }
