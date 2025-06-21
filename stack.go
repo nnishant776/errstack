@@ -154,7 +154,7 @@ func (self *StacktraceError) String() string {
 	sb := strings.Builder{}
 	stackTrace := self.StackTrace()
 	sb.Grow(_MIN_STR_BYTES_PER_FRAME_STACKTRACE * len(stackTrace.Frames))
-	DefaultErrorFormatter.FormatBuffer(&sb, self)
+	DefaultStackErrorFormatter.FormatBuffer(&sb, self)
 	DefaultStackTraceFormatter.FormatBuffer(&sb, stackTrace)
 	return sb.String()
 }
@@ -190,9 +190,9 @@ func (self *StacktraceError) String() string {
 // is free to define other options of their choosing or provide entirely different implmentations as long as
 // the interfaces are satisfied.
 func (self *StacktraceError) Format(s fmt.State, verb rune) {
-	erFmt := DefaultErrorFormatter
-	ffFmt := DefaultStackFrameFormatter
-	stFmt := DefaultStackTraceFormatter
+	erFmt := DefaultStackErrorFormatter
+	stFmt := erFmt.StackTraceFormatter()
+	ffFmt := stFmt.FrameFormatter()
 
 	eOpts := erFmt.Options()
 	fOpts := ffFmt.Options()

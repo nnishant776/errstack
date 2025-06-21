@@ -1,6 +1,6 @@
 package errstack
 
-var DefaultErrorFormatter ErrorFormatter = &errorFormatter{
+var DefaultStackErrorFormatter ErrorFormatter = &errorFormatter{
 	stFmt: DefaultStackTraceFormatter,
 	opts: ErrorFormatterOptions{
 		// ErrorSeparator:      "",
