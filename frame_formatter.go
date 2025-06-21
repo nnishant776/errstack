@@ -14,10 +14,11 @@ type FrameFormatterOptions struct {
 }
 
 type FrameFormatter interface {
-	WithOptions(opts FrameFormatterOptions) FrameFormatter
 	Options() FrameFormatterOptions
 	Format(f Frame) string
 	FormatBuffer(w io.Writer, f Frame)
+	Clone() FrameFormatter
+	SetOptions(opts FrameFormatterOptions) FrameFormatter
 }
 
 var _ FrameFormatter = (*frameFormatter)(nil)
@@ -86,4 +87,15 @@ func (self *frameFormatter) Format(f Frame) string {
 
 func (self *frameFormatter) FormatBuffer(w io.Writer, f Frame) {
 	self.format(w, f)
+}
+
+func (self *frameFormatter) Clone() FrameFormatter {
+	return &frameFormatter{
+		opts: self.opts,
+	}
+}
+
+func (self *frameFormatter) SetOptions(opts FrameFormatterOptions) FrameFormatter {
+	self.opts = opts
+	return self
 }
