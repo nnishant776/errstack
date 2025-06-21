@@ -70,6 +70,7 @@ func (self *StacktraceError) Error() string {
 	return self.str
 }
 
+//go:noinline
 func (self *StacktraceError) Throw(skip ...int) Error {
 	if self == nil {
 		return nil
