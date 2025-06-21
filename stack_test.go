@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -14,6 +15,7 @@ import (
 )
 
 func Test_StackTracedErrorWithDefaults(t *testing.T) {
+	goRoot := runtime.GOROOT()
 	currDir, err := os.Getwd()
 	if err != nil {
 		t.Errorf("Failed to get current directory: error: %s", err)
@@ -58,15 +60,15 @@ func Test_StackTracedErrorWithDefaults(t *testing.T) {
 				},
 				{
 					format: "-v",
-					expect: fmt.Sprintf("Hello Errors!=>github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.1@%s/stack_test.go:24;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.2@%s/stack_test.go:27;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.3@%s/stack_test.go:30;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1@%s/stack_test.go:33;testing.tRunner@/usr/local/go/src/testing/testing.go:1690;runtime.goexit@/usr/local/go/src/runtime/asm_amd64.s:1700", currDir, currDir, currDir, currDir),
+					expect: fmt.Sprintf("Hello Errors!=>github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.1@%s/stack_test.go:26;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.2@%s/stack_test.go:29;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.3@%s/stack_test.go:32;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1@%s/stack_test.go:35;testing.tRunner@%s/src/testing/testing.go:1690;runtime.goexit@%s/src/runtime/asm_amd64.s:1700", currDir, currDir, currDir, currDir, goRoot, goRoot),
 				},
 				{
 					format: "+v",
-					expect: fmt.Sprintf("Hello Errors!\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.1@%s/stack_test.go:24\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.2@%s/stack_test.go:27\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.3@%s/stack_test.go:30\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1@%s/stack_test.go:33\ntesting.tRunner@/usr/local/go/src/testing/testing.go:1690\nruntime.goexit@/usr/local/go/src/runtime/asm_amd64.s:1700", currDir, currDir, currDir, currDir),
+					expect: fmt.Sprintf("Hello Errors!\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.1@%s/stack_test.go:26\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.2@%s/stack_test.go:29\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.3@%s/stack_test.go:32\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1@%s/stack_test.go:35\ntesting.tRunner@%s/src/testing/testing.go:1690\nruntime.goexit@%s/src/runtime/asm_amd64.s:1700", currDir, currDir, currDir, currDir, goRoot, goRoot),
 				},
 				{
 					format: "#v",
-					expect: fmt.Sprintf("Hello Errors!\n#5: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.1@%s/stack_test.go:24\n#4: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.2@%s/stack_test.go:27\n#3: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.3@%s/stack_test.go:30\n#2: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1@%s/stack_test.go:33\n#1: testing.tRunner@/usr/local/go/src/testing/testing.go:1690\n#0: runtime.goexit@/usr/local/go/src/runtime/asm_amd64.s:1700", currDir, currDir, currDir, currDir),
+					expect: fmt.Sprintf("Hello Errors!\n#5: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.1@%s/stack_test.go:26\n#4: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.2@%s/stack_test.go:29\n#3: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1.3@%s/stack_test.go:32\n#2: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func1@%s/stack_test.go:35\n#1: testing.tRunner@%s/src/testing/testing.go:1690\n#0: runtime.goexit@%s/src/runtime/asm_amd64.s:1700", currDir, currDir, currDir, currDir, goRoot, goRoot),
 				},
 				{
 					format: "j",
@@ -149,15 +151,15 @@ func Test_StackTracedErrorWithDefaults(t *testing.T) {
 				},
 				{
 					format: "-v",
-					expect: fmt.Sprintf("Hello Errors!=>github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.1@%s/stack_test.go:115;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.2@%s/stack_test.go:118;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.3@%s/stack_test.go:121;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2@%s/stack_test.go:124", currDir, currDir, currDir, currDir),
+					expect: fmt.Sprintf("Hello Errors!=>github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.1@%s/stack_test.go:117;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.2@%s/stack_test.go:120;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.3@%s/stack_test.go:123;github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2@%s/stack_test.go:126", currDir, currDir, currDir, currDir),
 				},
 				{
 					format: "+v",
-					expect: fmt.Sprintf("Hello Errors!\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.1@%s/stack_test.go:115\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.2@%s/stack_test.go:118\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.3@%s/stack_test.go:121\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2@%s/stack_test.go:124", currDir, currDir, currDir, currDir),
+					expect: fmt.Sprintf("Hello Errors!\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.1@%s/stack_test.go:117\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.2@%s/stack_test.go:120\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.3@%s/stack_test.go:123\ngithub.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2@%s/stack_test.go:126", currDir, currDir, currDir, currDir),
 				},
 				{
 					format: "#v",
-					expect: fmt.Sprintf("Hello Errors!\n#3: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.1@%s/stack_test.go:115\n#2: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.2@%s/stack_test.go:118\n#1: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.3@%s/stack_test.go:121\n#0: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2@%s/stack_test.go:124", currDir, currDir, currDir, currDir),
+					expect: fmt.Sprintf("Hello Errors!\n#3: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.1@%s/stack_test.go:117\n#2: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.2@%s/stack_test.go:120\n#1: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2.3@%s/stack_test.go:123\n#0: github.com/nnishant776/errstack.Test_StackTracedErrorWithDefaults.func2@%s/stack_test.go:126", currDir, currDir, currDir, currDir),
 				},
 				{
 					format: "j",
