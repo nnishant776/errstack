@@ -68,14 +68,6 @@ func (self *frameFormatter) format(w io.Writer, f Frame) {
 	}
 }
 
-func (self *frameFormatter) WithOptions(opts FrameFormatterOptions) FrameFormatter {
-	ff := &frameFormatter{
-		opts: opts,
-	}
-
-	return ff
-}
-
 func (self *frameFormatter) Options() FrameFormatterOptions {
 	return self.opts
 }

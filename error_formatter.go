@@ -65,22 +65,6 @@ func (self *errorFormatter) format(w io.Writer, err error) {
 	}
 }
 
-func (self *errorFormatter) WithOptions(opts ErrorFormatterOptions) ErrorFormatter {
-	ef := &errorFormatter{
-		opts:  opts,
-		stFmt: self.stFmt,
-	}
-
-	return ef
-}
-
-func (self *errorFormatter) WithStackTraceFormatter(stFmt StackTraceFormatter) ErrorFormatter {
-	return &errorFormatter{
-		opts:  self.opts,
-		stFmt: stFmt,
-	}
-}
-
 func (self *errorFormatter) Options() ErrorFormatterOptions {
 	return self.opts
 }

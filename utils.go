@@ -85,7 +85,6 @@ func genStackTraceFromPCs(pcs []uintptr) []Frame {
 			Function: f.Function,
 			Line:     strconv.FormatInt(int64(f.Line), 10),
 		})
-
 		if !ok {
 			break
 		}

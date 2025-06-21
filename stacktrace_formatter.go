@@ -77,22 +77,6 @@ func (self *stackTraceFormatter) format(w io.Writer, s StackTrace) {
 	}
 }
 
-func (self *stackTraceFormatter) WithOptions(opts StackTraceFormatOptions) StackTraceFormatter {
-	stf := &stackTraceFormatter{
-		opts: opts,
-		ffmt: self.ffmt,
-	}
-
-	return stf
-}
-
-func (self *stackTraceFormatter) WithFrameFormatter(ff FrameFormatter) StackTraceFormatter {
-	return &stackTraceFormatter{
-		opts: self.opts,
-		ffmt: ff,
-	}
-}
-
 func (self *stackTraceFormatter) Options() StackTraceFormatOptions {
 	return self.opts
 }
