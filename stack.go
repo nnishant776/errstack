@@ -103,7 +103,7 @@ func (self *StacktraceError) StackTraceN(n int) StackTrace {
 }
 
 func (self *StacktraceError) StackTrace() StackTrace {
-	if self == nil {
+	if self == nil || self.frameCount <= 0 {
 		return StackTrace{}
 	}
 
