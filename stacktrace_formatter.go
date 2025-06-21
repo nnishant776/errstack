@@ -12,6 +12,7 @@ type StackTraceFormatter interface {
 	Format(s StackTrace) string
 	FormatBuffer(w io.Writer, s StackTrace)
 	Clone() StackTraceFormatter
+	Copy() StackTraceFormatter
 	SetOptions(opts StackTraceFormatOptions) StackTraceFormatter
 	SetFrameFormatter(ffFmt FrameFormatter) StackTraceFormatter
 }
@@ -113,6 +114,13 @@ func (self *stackTraceFormatter) FormatBuffer(w io.Writer, s StackTrace) {
 func (self *stackTraceFormatter) Clone() StackTraceFormatter {
 	return &stackTraceFormatter{
 		ffmt: self.ffmt.Clone(),
+		opts: self.opts,
+	}
+}
+
+func (self *stackTraceFormatter) Copy() StackTraceFormatter {
+	return &stackTraceFormatter{
+		ffmt: self.ffmt,
 		opts: self.opts,
 	}
 }

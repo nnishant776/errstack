@@ -115,6 +115,13 @@ func (self *chainErrorFormatter) Clone() ErrorFormatter {
 	}
 }
 
+func (self *chainErrorFormatter) Copy() ErrorFormatter {
+	return &chainErrorFormatter{
+		opts: self.opts,
+		sfmt: self.sfmt,
+	}
+}
+
 func (self *chainErrorFormatter) SetOptions(opts ErrorFormatterOptions) ErrorFormatter {
 	self.opts = opts
 	return self
