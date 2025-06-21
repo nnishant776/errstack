@@ -70,7 +70,7 @@ func (self *StacktraceError) Error() string {
 	return self.str
 }
 
-func (self *StacktraceError) Throw() Error {
+func (self *StacktraceError) Throw(skip ...int) Error {
 	if self == nil {
 		return nil
 	}
@@ -79,7 +79,12 @@ func (self *StacktraceError) Throw() Error {
 		return self
 	}
 
-	if pc := callerPC(1); pc != math.MaxUint64 {
+	skipCnt := 1
+	if len(skip) > 0 {
+		skipCnt += skip[0]
+	}
+
+	if pc := callerPC(skipCnt); pc != math.MaxUint64 {
 		if self.frameCount < _MAX_CALL_DEPTH {
 			self.pcList[self.frameCount] = pc
 			self.frameCount++
