@@ -2,9 +2,9 @@ package errstack
 
 var DefaultStackErrorFormatter ErrorFormatter = &errorFormatter{
 	stFmt: DefaultStackTraceFormatter,
-	opts: ErrorFormatterOptions{
+	opts:  ErrorFormatterOptions{
 		// ErrorSeparator:      "",
-		StackTraceSeparator: "=>",
+		// StackTraceSeparator: "",
 		// ErrorPrefix: "Error: ",
 	},
 }
@@ -12,8 +12,8 @@ var DefaultStackErrorFormatter ErrorFormatter = &errorFormatter{
 var DefaultChainErrorFormatter ErrorFormatter = &chainErrorFormatter{
 	sfmt: DefaultStackTraceFormatter,
 	opts: ErrorFormatterOptions{
-		ErrorSeparator:      ", ",
-		StackTraceSeparator: "=>",
+		ErrorSeparator: ", ",
+		// StackTraceSeparator: "",
 		// ErrorPrefix: "Error: ",
 	},
 }

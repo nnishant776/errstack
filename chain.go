@@ -212,6 +212,7 @@ func (self *ChainedStacktraceError) Format(s fmt.State, verb rune) {
 		default:
 		}
 
+		eOpts.StackTraceSeparator = "=>"
 		fOpts.SkipLocation = flags <= 1
 		sOpts.SkipStackIndex = flags&(1<<3) == 0
 		if flags&0x0d > 0 {
