@@ -9,7 +9,7 @@ const (
 )
 
 type StackTrace struct {
-	Frames []Frame `json:"stack"`
+	Frames []Frame `json:"stack,omitempty"`
 }
 
 func (self StackTrace) String() string {
