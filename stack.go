@@ -134,10 +134,15 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 		return json.Marshal(nil)
 	}
 
-	return json.Marshal(map[string]any{
+	data := map[string]any{
 		"error": self.Error(),
-		"stack": self.StackTrace(),
-	})
+	}
+
+	if self.frameCount > 0 {
+		data["trace"] = self.StackTrace()
+	}
+
+	return json.Marshal(data)
 }
 
 func (self *StacktraceError) String() string {
