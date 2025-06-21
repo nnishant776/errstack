@@ -200,12 +200,7 @@ func (self *StacktraceError) Format(s fmt.State, verb rune) {
 
 	switch verb {
 	case 's':
-		eOpts.StackTraceSeparator = ""
-		if !s.Flag('+') {
-			eOpts.ErrorPrefix = ""
-		}
-
-		erFmt.Clone().SetOptions(eOpts).FormatBuffer(s, self)
+		erFmt.FormatBuffer(s, self)
 
 	case 'v':
 		flags := byte(0)
@@ -224,6 +219,11 @@ func (self *StacktraceError) Format(s fmt.State, verb rune) {
 		eOpts.StackTraceSeparator = "=>"
 		fOpts.SkipLocation = flags <= 1
 		sOpts.SkipStackIndex = flags&(1<<3) == 0
+
+		erFmt = erFmt.Copy()
+		stFmt = stFmt.Copy()
+		ffFmt = ffFmt.Copy()
+
 		if flags&0x0d > 0 {
 			eOpts.StackTraceSeparator = "\n"
 			sOpts.FrameSeparator = "\n"
@@ -233,15 +233,10 @@ func (self *StacktraceError) Format(s fmt.State, verb rune) {
 			}
 		}
 
-		erFmt.Clone().
-			SetOptions(eOpts).
-			SetStackTraceFormatter(
-				stFmt.Clone().
-					SetOptions(sOpts).
-					SetFrameFormatter(
-						ffFmt.Clone().SetOptions(fOpts),
-					),
-			).FormatBuffer(s, self)
+		ffFmt.SetOptions(fOpts)
+		stFmt.SetOptions(sOpts).SetFrameFormatter(ffFmt)
+		erFmt.SetOptions(eOpts).SetStackTraceFormatter(stFmt)
+		erFmt.FormatBuffer(s, self)
 
 	case 'j':
 		enc := json.NewEncoder(s)
