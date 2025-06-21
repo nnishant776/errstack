@@ -21,7 +21,7 @@
             "comments": "off",
             "strings": "off"
         },
-        "editor.renderWhitespace": "boundary",
+        "editor.renderWhitespace": "none",
         "editor.renderLineHighlight": "all",
         "editor.suggestOnTriggerCharacters": true,
         "editor.tabSize": 4,
@@ -32,7 +32,6 @@
             "editor.rulers": [
                 120
             ],
-            "editor.tabSize": 8,
             "editor.insertSpaces": false,
             "editor.formatOnSave": true
         },
