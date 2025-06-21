@@ -7,11 +7,13 @@ import (
 )
 
 type StackTraceFormatter interface {
-	WithOptions(opts StackTraceFormatOptions) StackTraceFormatter
-	WithFrameFormatter(ff FrameFormatter) StackTraceFormatter
 	Options() StackTraceFormatOptions
+	FrameFormatter() FrameFormatter
 	Format(s StackTrace) string
 	FormatBuffer(w io.Writer, s StackTrace)
+	Clone() StackTraceFormatter
+	SetOptions(opts StackTraceFormatOptions) StackTraceFormatter
+	SetFrameFormatter(ffFmt FrameFormatter) StackTraceFormatter
 }
 
 var _ StackTraceFormatter = (*stackTraceFormatter)(nil)
@@ -84,16 +86,18 @@ func (self *stackTraceFormatter) WithOptions(opts StackTraceFormatOptions) Stack
 }
 
 func (self *stackTraceFormatter) WithFrameFormatter(ff FrameFormatter) StackTraceFormatter {
-	stf := &stackTraceFormatter{
+	return &stackTraceFormatter{
 		opts: self.opts,
 		ffmt: ff,
 	}
-
-	return stf
 }
 
 func (self *stackTraceFormatter) Options() StackTraceFormatOptions {
 	return self.opts
+}
+
+func (self *stackTraceFormatter) FrameFormatter() FrameFormatter {
+	return self.ffmt
 }
 
 func (self *stackTraceFormatter) Format(s StackTrace) string {
@@ -104,4 +108,21 @@ func (self *stackTraceFormatter) Format(s StackTrace) string {
 
 func (self *stackTraceFormatter) FormatBuffer(w io.Writer, s StackTrace) {
 	self.format(w, s)
+}
+
+func (self *stackTraceFormatter) Clone() StackTraceFormatter {
+	return &stackTraceFormatter{
+		ffmt: self.ffmt.Clone(),
+		opts: self.opts,
+	}
+}
+
+func (self *stackTraceFormatter) SetOptions(opts StackTraceFormatOptions) StackTraceFormatter {
+	self.opts = opts
+	return self
+}
+
+func (self *stackTraceFormatter) SetFrameFormatter(ffFmt FrameFormatter) StackTraceFormatter {
+	self.ffmt = ffFmt
+	return self
 }

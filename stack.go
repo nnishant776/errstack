@@ -3,7 +3,6 @@ package errstack
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"math"
 	"strings"
 )
@@ -137,6 +136,10 @@ func (self *StacktraceError) MarshalJSON() ([]byte, error) {
 }
 
 func (self *StacktraceError) String() string {
+	if self == nil {
+		return NilErrorString
+	}
+
 	sb := strings.Builder{}
 	stackTrace := self.StackTrace()
 	sb.Grow(_MIN_STR_BYTES_PER_FRAME_STACKTRACE * len(stackTrace.Frames))
@@ -161,13 +164,14 @@ func (self *StacktraceError) String() string {
 //
 //	%+v	Same as %-v, except it will print the stack trace on a separate line than the error. This
 //		overrides the stack frame separator and the error separator to '\n'. Rest of the options
-//		are kept intact
+//		are kept intact. '+' can be followed by an arbitrary number which will represent the count
+//		of spaces used to indent the stack trace
 //
-//	%#v	Same as %+v, except it will print stack indices as well
+//	%#v	Same as %+(n)v, except it will print stack indices as well
 //
 //	%j	Same as %-v, except it will be printed as a json string
 //
-//	%+j	Same as %-j, except it will be pretty printed. '+' can be followed by an arbitrary number
+//	%+j	Same as %j, except it will be pretty printed. '+' can be followed by an arbitrary number
 //		to indicate the indentation in the json output
 //
 // NOTE: Every verb defined above will always use the error and stack formatters defined in the package.
@@ -183,22 +187,14 @@ func (self *StacktraceError) Format(s fmt.State, verb rune) {
 	fOpts := ffFmt.Options()
 	sOpts := stFmt.Options()
 
-	stackTrace := StackTrace{}
 	switch verb {
 	case 's':
-		switch {
-		case s.Flag('+'):
-			eOpts.ErrorSeparator = ""
-			erFmt.WithOptions(eOpts).FormatBuffer(s, self)
-		default:
-			errStr := self.Error()
-			switch o := s.(type) {
-			case io.StringWriter:
-				o.WriteString(errStr)
-			default:
-				s.Write(string2Slice(errStr))
-			}
+		eOpts.StackTraceSeparator = ""
+		if !s.Flag('+') {
+			eOpts.ErrorPrefix = ""
 		}
+
+		erFmt.Clone().SetOptions(eOpts).FormatBuffer(s, self)
 
 	case 'v':
 		flags := byte(0)
@@ -217,33 +213,30 @@ func (self *StacktraceError) Format(s fmt.State, verb rune) {
 		fOpts.SkipLocation = flags <= 1
 		sOpts.SkipStackIndex = flags&(1<<3) == 0
 		if flags&0x0d > 0 {
-			eOpts.ErrorSeparator = "\n"
+			eOpts.StackTraceSeparator = "\n"
 			sOpts.FrameSeparator = "\n"
+			if w, ok := s.Width(); ok {
+				w = max(2, w)
+				sOpts.FrameIndent = strings.Repeat(" ", w)
+			}
 		}
 
-		stackTrace = self.StackTrace()
-
-		erFmt.WithOptions(eOpts).FormatBuffer(s, self)
-		stFmt.WithOptions(sOpts).
-			WithFrameFormatter(ffFmt.WithOptions(fOpts)).
-			FormatBuffer(s, stackTrace)
+		erFmt.Clone().
+			SetOptions(eOpts).
+			SetStackTraceFormatter(
+				stFmt.Clone().
+					SetOptions(sOpts).
+					SetFrameFormatter(
+						ffFmt.Clone().SetOptions(fOpts),
+					),
+			).FormatBuffer(s, self)
 
 	case 'j':
-		indentEnabled := s.Flag('+')
-		stackTrace = self.StackTrace()
-		data := map[string]any{
-			"error": self.Error(),
-			"trace": stackTrace,
-		}
-
-		if indentEnabled {
+		enc := json.NewEncoder(s)
+		if s.Flag('+') {
 			w, _ := s.Width()
-			w = max(2, w)
-			enc := json.NewEncoder(s)
-			enc.SetIndent("", strings.Repeat(" ", w))
-			enc.Encode(data)
-		} else {
-			json.NewEncoder(s).Encode(data)
+			enc.SetIndent("", strings.Repeat(" ", max(2, w)))
 		}
+		enc.Encode(self)
 	}
 }
