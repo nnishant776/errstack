@@ -11,6 +11,7 @@ type ErrorFormatter interface {
 	Format(e error) string
 	FormatBuffer(w io.Writer, e error)
 	Clone() ErrorFormatter
+	Copy() ErrorFormatter
 	SetOptions(opts ErrorFormatterOptions) ErrorFormatter
 	SetStackTraceFormatter(stFmt StackTraceFormatter) ErrorFormatter
 }
@@ -102,6 +103,13 @@ func (self *errorFormatter) Clone() ErrorFormatter {
 	return &errorFormatter{
 		opts:  self.opts,
 		stFmt: self.stFmt.Clone(),
+	}
+}
+
+func (self *errorFormatter) Copy() ErrorFormatter {
+	return &errorFormatter{
+		opts:  self.opts,
+		stFmt: self.stFmt,
 	}
 }
 

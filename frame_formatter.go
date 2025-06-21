@@ -18,6 +18,7 @@ type FrameFormatter interface {
 	Format(f Frame) string
 	FormatBuffer(w io.Writer, f Frame)
 	Clone() FrameFormatter
+	Copy() FrameFormatter
 	SetOptions(opts FrameFormatterOptions) FrameFormatter
 }
 
@@ -90,6 +91,12 @@ func (self *frameFormatter) FormatBuffer(w io.Writer, f Frame) {
 }
 
 func (self *frameFormatter) Clone() FrameFormatter {
+	return &frameFormatter{
+		opts: self.opts,
+	}
+}
+
+func (self *frameFormatter) Copy() FrameFormatter {
 	return &frameFormatter{
 		opts: self.opts,
 	}
