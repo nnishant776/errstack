@@ -30,7 +30,7 @@ jobs:
       - name: Set up build environment
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22'
+          go-version: '1.23'
 
       - name: Run unit tests
         run: |
