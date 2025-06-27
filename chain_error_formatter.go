@@ -14,7 +14,7 @@ type chainErrorFormatter struct {
 
 func (self *chainErrorFormatter) format(w io.Writer, err error) {
 	if err == nil {
-		w.Write([]byte(NilErrorString))
+		w.Write(string2Slice(NilErrorString))
 		return
 	}
 
