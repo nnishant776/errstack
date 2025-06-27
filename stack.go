@@ -52,7 +52,7 @@ func newStacktraceErrorString(errStr string, opts ...StackErrOption) *Stacktrace
 	}
 
 	if stErr.opts.autoStacktrace {
-		stErr.frameCount = len(callersPCsBuf(3, _MAX_CALL_DEPTH, stErr.pcList[:]))
+		stErr.frameCount = len(callersPCsBuf(stErr.opts.extraFrameSkip+3, _MAX_CALL_DEPTH, stErr.pcList[:]))
 	}
 
 	return stErr
