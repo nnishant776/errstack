@@ -204,7 +204,7 @@ func Test_StackTracedErrorWithDefaults(t *testing.T) {
 	})
 }
 
-func Benchmark_pkgerrors(b *testing.B) {
+func Benchmark_StacktraceError(b *testing.B) {
 	type ifce interface {
 		StackTrace() pkgerrs.StackTrace
 	}
