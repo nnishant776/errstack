@@ -13,7 +13,7 @@ func NewChain(err error, opts ...StackErrOption) *ChainedStacktraceError {
 }
 
 func NewChainString(errStr string, opts ...StackErrOption) *ChainedStacktraceError {
-	return newChainedStacktraceErrorString(errStr, opts...)
+	return newChainedStacktraceErrorString(errStr, append(opts, withExtraFrameSkip(2))...)
 }
 
 func newChainedStacktraceError(err error, opts ...StackErrOption) *ChainedStacktraceError {
