@@ -31,7 +31,7 @@ type errorFormatter struct {
 
 func (self *errorFormatter) format(w io.Writer, err error) {
 	if self == nil {
-		w.Write([]byte(NilErrorString))
+		w.Write(string2Slice(NilErrorString))
 		return
 	}
 
