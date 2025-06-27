@@ -5,6 +5,6 @@ test:
 
 bench: benchname:=.
 bench:
-	go test -modfile devdeps.mod -bench="$(benchname)" -count 10 -ldflags '-s -w' -run="^$$" -benchmem -memprofile=mem.out -cpuprofile=cpu.out -v ./...
+	go test -modfile devdeps.mod -bench="$(benchname)" -count 5 -run="^$$" -benchmem -memprofile=mem.out -cpuprofile=cpu.out -v ./...
 
 run:
