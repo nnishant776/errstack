@@ -71,7 +71,7 @@ func (self *StacktraceError) Error() string {
 }
 
 //go:noinline
-func (self *StacktraceError) Throw(skip ...int) Error {
+func (self *StacktraceError) ThrowSkip(skip int) Error {
 	if self == nil {
 		return nil
 	}
@@ -80,10 +80,7 @@ func (self *StacktraceError) Throw(skip ...int) Error {
 		return self
 	}
 
-	skipCnt := 1
-	if len(skip) > 0 {
-		skipCnt += skip[0]
-	}
+	skipCnt := 1 + max(0, skip)
 
 	if pc := callerPC(skipCnt); pc != math.MaxUint64 {
 		if self.frameCount < _MAX_CALL_DEPTH {
@@ -94,6 +91,11 @@ func (self *StacktraceError) Throw(skip ...int) Error {
 	}
 
 	return self
+}
+
+//go:noinline
+func (self *StacktraceError) Throw() Error {
+	return self.ThrowSkip(1)
 }
 
 func (self *StacktraceError) StackTraceN(n int) StackTrace {

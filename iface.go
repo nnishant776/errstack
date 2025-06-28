@@ -20,7 +20,8 @@ type Error interface {
 	error
 	StackTrace() StackTrace
 	String() string
-	Throw(skip ...int) Error
+	Throw() Error
+	ThrowSkip(skip int) Error
 	Unwrap() error
 }
 

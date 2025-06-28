@@ -96,7 +96,7 @@ func (self *ChainedStacktraceError) Throw() ChainedError {
 		return nil
 	}
 
-	self.currErr.Throw(1)
+	self.currErr.ThrowSkip(1)
 
 	return self
 
